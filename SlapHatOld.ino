@@ -63,13 +63,14 @@ int pos = 0;    // variable to store the servo position
 #define Servo_Pin 5					// Attach the servo to pin 5
 
 long Current_Time = 0;
-long Current_Time_millis = 0;
+long Alarm_Time = 0;
 
 #pragma region protoypes
 void OLED_Setup();
-long SetTime();
-void DisplayTime(long Current_Time, long Alarm_Time = 0);
+long SetTime(bool Current = true);
+void DisplayTime();
 void PrintTimeString(long Time, bool Current = true);
+void ResetTime();
 #pragma endregion
 
 void setup() {
@@ -86,29 +87,15 @@ void setup() {
 	myservo.attach(Servo_Pin);  // attaches the servo on pin 9 to the servo object
 	myservo.write(0);
 	
-	display.setCursor(0, 0);
-	display.clearDisplay();
-	display.setTextSize(1);
-	display.println("Set Current Time");
-	display.display();
-	delay(3000);
-
-	Current_Time = SetTime();
-	Current_Time_millis = millis();
+	ResetTime();
 	
-	display.setCursor(0, 0);
-	display.clearDisplay();
-	display.setTextSize(1);
-	display.println("Current Time Set");
-	display.display();
-	delay(100);
 
 }
 
 
 void loop() {
 	Current_Time++;
-	DisplayTime(Current_Time);
+	DisplayTime();
 	delay(1000);
 }
  
@@ -136,9 +123,9 @@ void OLED_Setup() {
 /// Uses the Minute and Hours buttons to set time.  When both buttons are pressed, the time is set.
 /// </summary>
 /// <returns>Time in military format</returns>
-long SetTime() {
+long SetTime(bool Current = true) {
 
-	long Time = 0;
+	long SettingTime = 0;
 	long Hours = 0;
 	long Minutes = 0;
 
@@ -175,45 +162,32 @@ long SetTime() {
 	
 
 
-		Time = Hours * 10000 + Minutes*100;
-		Serial.println("Time = "+String(Time));
-		DisplayTime(Time);
-
+		SettingTime = Hours * 10000 + Minutes*100;
+		Serial.println("Time = "+String(SettingTime));
+		if (Current) { Current_Time = SettingTime; }
+		if(!Current){ Alarm_Time = SettingTime; }
+		DisplayTime();
 	}
-	return Time;
+	return SettingTime;
 }
 
 /// <summary>
 /// Displays the time in the proper format on the OLED
 /// </summary>
 /// <param name="Time">Military time int, form HHMMSS</param>
-void DisplayTime(long Current_Time, long Alarm_Time = 0) {
+void DisplayTime() {
+
+#pragma region current time
+
 	display.setCursor(0, 0);
 	display.clearDisplay();
-	
+
 	display.setTextSize(1);
 	display.println("Current Time:");
-
 	display.setTextSize(2);
-	PrintTimeString(Current_Time);
-
-	display.setTextSize(1);
-	display.println("Alarm Time:");
-
-	display.setTextSize(2);
-	PrintTimeString(Alarm_Time,false);
-	display.display();
-} 
-
-/// <summary>
-/// 
-/// </summary>
-/// <param name="Time">Military time int, form HHMMSS</param>
-/// <returns>Prints the time string on the display</returns>
-void PrintTimeString(long Time,bool Current = true) {
-	long Hours = floor(Time / 10000);
-	long Minutes = floor((Time - Hours * 10000) / 100);
-	long Seconds = Time - Hours * 10000 - Minutes * 100;
+	long Hours = floor(Current_Time / 10000);
+	long Minutes = floor((Current_Time - Hours * 10000) / 100);
+	long Seconds = Current_Time - Hours * 10000 - Minutes * 100;
 
 	if (Seconds == 60) {
 		Seconds = 0;
@@ -230,7 +204,7 @@ void PrintTimeString(long Time,bool Current = true) {
 	}
 
 	// Don't need this for alarm because it doesn't change
-	if (Current) { Current_Time = Hours * 10000 + Minutes * 100 + Seconds; }
+	Current_Time = Hours * 10000 + Minutes * 100 + Seconds; 
 
 	String Hours_Str = String(Hours);
 	String Minutes_Str = String(Minutes);
@@ -257,5 +231,100 @@ void PrintTimeString(long Time,bool Current = true) {
 	display.print(Minutes_Str);
 	display.print(":");
 	display.println(Seconds_Str);
+#pragma endregion
 
+
+
+
+#pragma region alarm time
+	display.setTextSize(1);
+	display.println("Alarm Time:");
+	display.setTextSize(2);
+	
+	 Hours = floor(Alarm_Time / 10000);
+	 Minutes = floor((Alarm_Time - Hours * 10000) / 100);
+	 Seconds = Alarm_Time - Hours * 10000 - Minutes * 100;
+
+	if (Seconds == 60) {
+		Seconds = 0;
+		Minutes++;
+	}
+
+	if (Minutes == 60) {
+		Minutes = 0;
+		Hours++;
+	}
+
+	if (Hours == 24) {
+		Hours = 0;
+	}
+
+
+	 Hours_Str = String(Hours);
+	 Minutes_Str = String(Minutes);
+	 Seconds_Str = String(Seconds);
+
+	// Add a zero if not 2 chars
+	if (Hours_Str.length() < 2) {
+		Hours_Str = "0" + Hours_Str;
+	}
+
+	// Add a zero if not 2 chars
+	if (Minutes_Str.length() < 2) {
+		Minutes_Str = "0" + Minutes_Str;
+	}
+
+	// Add a zero if not 2 chars
+	if (Seconds_Str.length() < 2) {
+		Seconds_Str = "0" + Seconds_Str;
+	}
+
+
+	display.print(Hours_Str);
+	display.print(":");
+	display.print(Minutes_Str);
+	display.print(":");
+	display.println(Seconds_Str);
+#pragma endregion
+
+	display.display();
+} 
+
+/// <summary>
+/// Sets and resets the time
+/// </summary>
+void ResetTime()
+{
+	display.setCursor(0, 0);
+	display.clearDisplay();
+	display.setTextSize(1);
+	display.println("Set Current Time");
+	display.display();
+	delay(3000);
+
+	Current_Time = SetTime();
+
+
+	display.setCursor(0, 0);
+	display.clearDisplay();
+	display.setTextSize(1);
+	display.println("Current Time Set");
+	display.display();
+	delay(100);
+
+	display.setCursor(0, 0);
+	display.clearDisplay();
+	display.setTextSize(1);
+	display.println("Set Alarm Time");
+	display.display();
+	delay(3000);
+
+	Alarm_Time = SetTime(false);
+
+	display.setCursor(0, 0);
+	display.clearDisplay();
+	display.setTextSize(1);
+	display.println("Alarm Time Set");
+	display.display();
+	delay(100);
 }
