@@ -61,7 +61,7 @@ int pos = 0;    // variable to store the servo position
 #define Minute_Button 3				// Attach Minute Button to pin 3
 #define Reset_Button 4				// Reset Time
 #define Buzzer 5					// Attach buzer to pin 5
-#define Servo_Pin 6					// Attach the servo to pin 6
+#define Servo_Pin 9					// Attach the servo to pin 6
 
 long Current_Time = 0;
 long Alarm_Time = 0;
@@ -72,11 +72,12 @@ long SetTime(bool Current = true);
 void DisplayTime();
 void PrintTimeString(long Time, bool Current = true);
 void ResetTime(bool onlyAlarm = false);
+void Alarm();
 #pragma endregion
 
 void setup() {
 	OLED_Setup();
-	
+
 	pinMode(Switch, INPUT);
 	
 	pinMode(Hour_Button, INPUT_PULLUP);
@@ -87,9 +88,12 @@ void setup() {
 
 	pinMode(Buzzer, OUTPUT);
 
-	myservo.attach(Servo_Pin);  // attaches the servo on pin 9 to the servo object
+	myservo.attach(Servo_Pin);  // attaches the servo on pin 6 to the servo object
 	myservo.write(0);
-	
+	delay(1000);
+
+
+
 	ResetTime();
 	
 
@@ -103,6 +107,13 @@ void loop() {
 
 	// If the reset alarm button is pushed, reset the alarm
 	if (digitalRead(Reset_Button) == LOW) { ResetTime(true); }
+
+	// If the current time is greater than the alarm time, go off
+	if (Current_Time >= Alarm_Time)
+	{
+		Alarm();
+	}
+
 }
  
 /// <summary>
@@ -354,4 +365,41 @@ void ResetTime(bool onlyAlarm = false)
 		display.display();
 		delay(1000);
 	}
+}
+
+
+
+void Alarm() {
+	// How long should it go???
+#define duration 1 // minute
+
+	long start_time = millis();
+
+#define start 0
+#define mid 45
+#define end 90
+#define freq 1000 // buzzer frequency
+
+
+
+	while (millis() < start_time + duration * 1000 * 60)
+	{
+
+		tone(Buzzer, freq);
+		myservo.write(mid);
+		delay(1000);
+
+		noTone(Buzzer);
+		myservo.write(end);
+		delay(1000);
+
+		tone(Buzzer, freq);
+		myservo.write(mid);
+		delay(1000);
+
+		noTone(Buzzer);
+		myservo.write(start);
+		delay(1000);
+	}
+
 }
