@@ -59,8 +59,9 @@ int pos = 0;    // variable to store the servo position
 #define Switch 1					// Attach switch to pin 1
 #define Hour_Button 2				// Attach Hour Button to pin 2
 #define Minute_Button 3				// Attach Minute Button to pin 3
-#define Buzzer 4					// Attach buzer to pin 4
-#define Servo_Pin 5					// Attach the servo to pin 5
+#define Reset_Button 4				// Reset Time
+#define Buzzer 5					// Attach buzer to pin 5
+#define Servo_Pin 6					// Attach the servo to pin 6
 
 long Current_Time = 0;
 long Alarm_Time = 0;
@@ -70,7 +71,7 @@ void OLED_Setup();
 long SetTime(bool Current = true);
 void DisplayTime();
 void PrintTimeString(long Time, bool Current = true);
-void ResetTime();
+void ResetTime(bool onlyAlarm = false);
 #pragma endregion
 
 void setup() {
@@ -81,6 +82,8 @@ void setup() {
 	pinMode(Hour_Button, INPUT_PULLUP);
 
 	pinMode(Minute_Button, INPUT_PULLUP);
+
+	pinMode(Reset_Button, INPUT_PULLUP);
 
 	pinMode(Buzzer, OUTPUT);
 
@@ -97,6 +100,9 @@ void loop() {
 	Current_Time++;
 	DisplayTime();
 	delay(1000);
+
+	// If the reset alarm button is pushed, reset the alarm
+	if (digitalRead(Reset_Button) == LOW) { ResetTime(true); }
 }
  
 /// <summary>
@@ -293,38 +299,59 @@ void DisplayTime() {
 /// <summary>
 /// Sets and resets the time
 /// </summary>
-void ResetTime()
+void ResetTime(bool onlyAlarm = false)
 {
-	display.setCursor(0, 0);
-	display.clearDisplay();
-	display.setTextSize(1);
-	display.println("Set Current Time");
-	display.display();
-	delay(3000);
+	if (onlyAlarm)
+	{
+		display.setCursor(0, 0);
+		display.clearDisplay();
+		display.setTextSize(1);
+		display.println("Set Alarm Time");
+		display.display();
+		delay(3000);
 
-	Current_Time = SetTime();
+		Alarm_Time = SetTime(false);
+
+		display.setCursor(0, 0);
+		display.clearDisplay();
+		display.setTextSize(1);
+		display.println("Alarm Time Set");
+		display.display();
+		delay(1000);
+	}
+
+	else {
+		display.setCursor(0, 0);
+		display.clearDisplay();
+		display.setTextSize(1);
+		display.println("Set Current Time");
+		display.display();
+		delay(3000);
+
+		Current_Time = SetTime();
 
 
-	display.setCursor(0, 0);
-	display.clearDisplay();
-	display.setTextSize(1);
-	display.println("Current Time Set");
-	display.display();
-	delay(100);
+		display.setCursor(0, 0);
+		display.clearDisplay();
+		display.setTextSize(1);
+		display.println("Current Time Set");
+		display.display();
+		delay(1000);
 
-	display.setCursor(0, 0);
-	display.clearDisplay();
-	display.setTextSize(1);
-	display.println("Set Alarm Time");
-	display.display();
-	delay(3000);
+		display.setCursor(0, 0);
+		display.clearDisplay();
+		display.setTextSize(1);
+		display.println("Set Alarm Time");
+		display.display();
+		delay(3000);
 
-	Alarm_Time = SetTime(false);
+		Alarm_Time = SetTime(false);
 
-	display.setCursor(0, 0);
-	display.clearDisplay();
-	display.setTextSize(1);
-	display.println("Alarm Time Set");
-	display.display();
-	delay(100);
+		display.setCursor(0, 0);
+		display.clearDisplay();
+		display.setTextSize(1);
+		display.println("Alarm Time Set");
+		display.display();
+		delay(1000);
+	}
 }
