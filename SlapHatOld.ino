@@ -69,7 +69,7 @@ long Current_Time_millis = 0;
 void OLED_Setup();
 long SetTime();
 void DisplayTime(long Current_Time, long Alarm_Time = 0);
-String TimeString(long Time, bool Current = true);
+void PrintTimeString(long Time, bool Current = true);
 #pragma endregion
 
 void setup() {
@@ -195,13 +195,13 @@ void DisplayTime(long Current_Time, long Alarm_Time = 0) {
 	display.println("Current Time:");
 
 	display.setTextSize(2);
-	display.println(TimeString(Current_Time));
+	PrintTimeString(Current_Time);
 
 	display.setTextSize(1);
 	display.println("Alarm Time:");
 
 	display.setTextSize(2);
-	display.println(TimeString(Alarm_Time,false));
+	PrintTimeString(Alarm_Time,false);
 	display.display();
 } 
 
@@ -209,8 +209,8 @@ void DisplayTime(long Current_Time, long Alarm_Time = 0) {
 /// 
 /// </summary>
 /// <param name="Time">Military time int, form HHMMSS</param>
-/// <returns>Properly formatted string for display</returns>
-String TimeString(long Time,bool Current = true) {
+/// <returns>Prints the time string on the display</returns>
+void PrintTimeString(long Time,bool Current = true) {
 	long Hours = floor(Time / 10000);
 	long Minutes = floor((Time - Hours * 10000) / 100);
 	long Seconds = Time - Hours * 10000 - Minutes * 100;
@@ -229,6 +229,7 @@ String TimeString(long Time,bool Current = true) {
 		Hours = 0;
 	}
 
+	// Don't need this for alarm because it doesn't change
 	if (Current) { Current_Time = Hours * 10000 + Minutes * 100 + Seconds; }
 
 	String Hours_Str = String(Hours);
@@ -251,7 +252,10 @@ String TimeString(long Time,bool Current = true) {
 	}
 
 
-	String time_display = Hours_Str + ":" + Minutes_Str + ":" + Seconds_Str;
+	display.print(Hours_Str);
+	display.print(":");
+	display.print(Minutes_Str);
+	display.print(":");
+	display.println(Seconds_Str);
 
-	return time_display;
 }
