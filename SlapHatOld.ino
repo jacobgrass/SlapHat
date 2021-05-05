@@ -203,6 +203,7 @@ void DisplayTime(long Current_Time, long Alarm_Time = 0) {
 	display.setTextSize(2);
 	display.println(TimeString(Alarm_Time,false));
 	display.display();
+
 } 
 
 /// <summary>
