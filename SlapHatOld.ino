@@ -123,7 +123,7 @@ void setup() {
 void loop() {
 
 	// This value was found experimentally to compensate for error between computed time and real time.  A value of 1 means no error, <1 "speeds up" time on the arduino
-	#define time_modifier 0.6559
+	#define time_modifier 0.65090969
 	
 	Current_Time++;
 	DisplayTime();
