@@ -61,9 +61,10 @@ const	char	string_2[]	PROGMEM = "Set Current Time";
 const	char	string_3[]	PROGMEM = "Current Time Set";
 const	char	string_4[]	PROGMEM = "Set Alarm Time";
 const	char	string_5[]	PROGMEM = "Alarm Time Set";
+const	char	string_6[]	PROGMEM = "Alarm Stopped.";
 
 // Then set up a table to refer to your strings.
-const char* const string_table[] PROGMEM = { string_0, string_1, string_2, string_3, string_4, string_5 };
+const char* const string_table[] PROGMEM = { string_0, string_1, string_2, string_3, string_4, string_5, string_6 };
 
 char buffer[64];  // make sure this is large enough for the largest string it must hold
 
@@ -125,8 +126,7 @@ void loop() {
 	// This value was found experimentally to compensate for error between computed time and real time.  A value of 1 means no error, <1 "speeds up" time on the arduino
 	#define time_modifier 0.65090969
 	
-	Current_Time++;
-	DisplayTime();
+
 	
 	// How are we going to get accurate-ish time?  Let's use a millis() calculation and a while loop.  delay(1000) was much longer than one second.
 	long time_init = millis();
@@ -148,7 +148,9 @@ void loop() {
 	//Serial.println(Alarm_Time);
 	//Serial.println(Current_Time >= Alarm_Time);
 	
-
+	// Keep this at the end so we can set both to 00:00:00 for testing alarm
+	Current_Time++;
+	DisplayTime();
 
 }
  
@@ -406,14 +408,14 @@ void ResetTime(bool onlyAlarm = false)
 void Alarm(void) {
 
 
-long start_time = millis();
+	long start_time = millis();
 
-#define start 0
-#define end 180
-#define freq 1000 // buzzer frequency
+	#define start 0
+	#define end 180
+	#define freq 1000 // buzzer frequency
 
-// Need to store the time so we can calculate duration
-long mytime = millis();
+	// Need to store the time so we can calculate duration
+	long mytime = millis();
 
 	// Holding the reset button stops the alarm
 	while (mytime < start_time + duration * 1000 * 60 && digitalRead(Reset_Button) != LOW)
@@ -431,7 +433,20 @@ long mytime = millis();
 		myservo.write(end);
 		delay(1000);
 
+		// Go to a different screen when alarm is turned off
+		if (digitalRead(Reset_Button) == LOW) {
+			display.setCursor(0, 0);
+			display.clearDisplay();
+
+			display.setTextSize(1);
+			strcpy_P(buffer, (char*)pgm_read_word(&(string_table[6])));  // Necessary casts and dereferencing, just copy.
+			display.println(buffer);
+			display.display();
+			delay(4000);
+			break;
+		}
 	}
+
 
 }
 
