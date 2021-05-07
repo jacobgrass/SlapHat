@@ -442,7 +442,8 @@ void Alarm(void) {
 			strcpy_P(buffer, (char*)pgm_read_word(&(string_table[6])));  // Necessary casts and dereferencing, just copy.
 			display.println(buffer);
 			display.display();
-			delay(4000);
+
+			StartupNoise();
 			break;
 		}
 	}
